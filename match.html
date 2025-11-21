@@ -3,146 +3,171 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Live Match Player</title>
-
-<!-- HLS.js -->
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<title>Match Fixtures</title>
 
 <style>
     body {
         margin: 0;
-        font-family: Arial, sans-serif;
+        padding: 40px;
+        font-family: 'Poppins', sans-serif;
         background: #f5f7ff;
         display: flex;
         justify-content: center;
-        padding: 30px;
     }
 
-    .container {
-        width: 90%;
-        max-width: 900px;
+    .match-card {
+        width: 95%;
+        max-width: 850px;
         background: #fff;
-        padding: 25px;
         border-radius: 22px;
-        box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-        border: 2px solid #e6e6e6;
+        padding: 25px;
+        position: relative;
+        box-shadow: 0 7px 25px rgba(0,0,0,0.07);
+        border: 2px solid #ff3b3b20;
+        transition: 0.25s ease;
     }
 
-    .header {
-        text-align: center;
-        margin-bottom: 20px;
+    .match-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.1);
     }
 
-    .header h2 {
-        margin: 0;
-        font-size: 24px;
-        color: #1d2d5f;
-    }
-
-    .live-badge {
-        display: inline-block;
-        background: #ff3b3b;
+    /* Hot Badge */
+    .hot-badge {
+        position: absolute;
+        top: -10px;
+        left: -10px;
+        background: linear-gradient(45deg, #ff3b3b, #ff7a00);
+        padding: 6px 14px;
         color: #fff;
-        padding: 5px 14px;
-        border-radius: 12px;
-        margin-top: 6px;
-        font-size: 14px;
         font-weight: bold;
+        border-radius: 12px 12px 12px 0;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 13px;
     }
 
-    .flags {
+    /* Views Bubble */
+    .views {
+        position: absolute;
+        top: 15px;
+        right: 20px;
+        background: #fff;
+        border: 2px solid #ddd;
+        padding: 6px 14px;
+        border-radius: 25px;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 600;
+    }
+
+    .league {
+        text-align: center;
+        margin-bottom: 25px;
+    }
+
+    .league h3 {
+        margin: 0;
+        color: #1d2d5f;
+        font-size: 20px;
+        letter-spacing: 1px;
+    }
+
+    .mid-section {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin: 20px 0;
-        padding: 0 20px;
+        padding: 0 15px;
     }
 
-    .flags img {
-        width: 75px;
+    .team {
+        text-align: center;
+        font-weight: 600;
+        font-size: 18px;
+    }
+
+    .team img {
+        width: 85px;
+        height: auto;
         border-radius: 6px;
+        margin-bottom: 8px;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.12);
     }
 
-    video {
-        width: 100%;
-        border-radius: 18px;
-        background: #000;
-        margin-top: 15px;
+    .time {
+        text-align: center;
+        font-size: 18px;
+        font-weight: 500;
+        color: #444;
     }
 
-    .url-box {
-        margin-top: 20px;
-        display: flex;
-        gap: 10px;
-    }
-
-    input {
-        width: 100%;
-        padding: 10px;
-        border-radius: 12px;
-        border: 1px solid #bbb;
+    .live-btn {
+        background: #ff3b3b;
+        color: #fff;
+        font-weight: bold;
         font-size: 15px;
-    }
-
-    button {
-        background: #1d2d5f;
-        color: white;
-        padding: 10px 18px;
-        border-radius: 10px;
         border: none;
+        padding: 8px 20px;
+        border-radius: 12px;
+        margin-top: 8px;
         cursor: pointer;
-        font-size: 15px;
+        transition: 0.25s;
     }
 
-    button:hover {
-        background: #152043;
+    .live-btn:hover {
+        background: #d82c2c;
     }
 
+    .live-now {
+        text-align: center;
+        font-size: 14px;
+        color: #ff3b3b;
+        margin-top: 8px;
+        font-weight: 600;
+    }
 </style>
 </head>
 <body>
 
-<div class="container">
+<div class="match-card">
 
-    <div class="header">
-        <h2>AUS vs ENG — Live Player</h2>
-        <div class="live-badge">Live</div>
+    <div class="hot-badge">🔥 Hot</div>
+
+    <div class="views">
+        👁️ 584
     </div>
 
-    <div class="flags">
-        <div style="text-align:center;">
+    <div class="league">
+        <h3>THE ASHES</h3>
+    </div>
+
+    <div class="mid-section">
+
+        <!-- Team A -->
+        <div class="team">
             <img src="https://flagcdn.com/w320/au.png">
-            <p>AUS</p>
+            <div>AUS</div>
         </div>
-        <div style="text-align:center;">
+
+        <!-- Time + Live -->
+        <div class="time">
+            8:00 AM<br>
+            <button class="live-btn">Live</button>
+            <div class="live-now">Live Now</div>
+        </div>
+
+        <!-- Team B -->
+        <div class="team">
             <img src="https://flagcdn.com/w320/gb-eng.png">
-            <p>ENG</p>
+            <div>ENG</div>
         </div>
-    </div>
 
-    <video id="video" controls autoplay></video>
-
-    <div class="url-box">
-        <input id="streamURL" placeholder="Paste m3u8 URL here">
-        <button onclick="playStream()">Play</button>
     </div>
 
 </div>
-
-<script>
-function playStream() {
-    const video = document.getElementById("video");
-    const url = document.getElementById("streamURL").value;
-
-    if (Hls.isSupported()) {
-        const hls = new Hls();
-        hls.loadSource(url);
-        hls.attachMedia(video);
-    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-        video.src = url;
-    }
-}
-</script>
 
 </body>
 </html>
