@@ -1,493 +1,147 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Match Creator — Simple HTML</title>
-  <style>
-    :root{
-      --bg:#f3f4f6;
-      --card:#fff;
-      --muted:#6b7280;
-      --accent:#0ea5e9;
-      --danger:#ef4444;
-      --shadow: 0 6px 18px rgba(15,23,42,0.08);
-      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Match Player</title>
+
+<!-- HLS.js -->
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f5f7ff;
+        display: flex;
+        justify-content: center;
+        padding: 30px;
     }
-    body{margin:0;background:var(--bg);padding:28px;color:#111}
-    .container{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:430px 1fr;gap:20px}
-    .panel{background:var(--card);padding:18px;border-radius:8px;box-shadow:var(--shadow);border:1px solid rgba(0,0,0,0.04)}
-    h1{font-size:18px;margin:0 0 12px}
-    label{display:block;font-size:13px;color:var(--muted);margin:12px 0 6px}
-    input[type="text"], input[type="url"], select, textarea, input[type="datetime-local"]{
-      width:100%;padding:10px;border-radius:6px;border:1px solid #e6e7eb;font-size:14px;box-sizing:border-box;
+
+    .container {
+        width: 90%;
+        max-width: 900px;
+        background: #fff;
+        padding: 25px;
+        border-radius: 22px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        border: 2px solid #e6e6e6;
     }
-    .row{display:flex;gap:10px}
-    .col{flex:1}
-    .btn{display:inline-block;padding:10px 14px;border-radius:6px;border:0;background:var(--accent);color:#fff;cursor:pointer;font-weight:600}
-    .btn.secondary{background:#9ca3af}
-    .btn.ghost{background:transparent;border:1px solid #e6e7eb;color:#111}
-    .actions{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
-    textarea {min-height:200px;resize:vertical}
-    .preview-wrap{display:flex;flex-direction:column;gap:12px}
-    .match-card{display:flex;align-items:center;justify-content:space-between;padding:14px;border-radius:8px;background:linear-gradient(180deg,#ffffff,#fbfdff);border:1px solid #eef2f7}
-    .team{display:flex;align-items:center;gap:12px;min-width:36%}
-    .team img{width:56px;height:36px;object-fit:contain;border-radius:6px;background:#fff;padding:4px;border:1px solid #eee}
-    .team .name{font-weight:600}
-    .vs{font-size:18px;color:var(--muted);font-weight:700}
-    .meta{font-size:13px;color:var(--muted);margin-top:6px}
-    .match-status{padding:8px 12px;border-radius:20px;background:#111;color:#fff;font-weight:700}
-    .small{font-size:13px;color:var(--muted)}
-    .saved-list{max-height:220px;overflow:auto;border-top:1px dashed #eee;padding-top:10px;margin-top:10px}
-    .saved-item{padding:8px;border-radius:6px;border:1px solid #f1f5f9;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
-    .link{color:var(--accent);text-decoration:underline;cursor:pointer}
-    footer{margin-top:20px;text-align:center;color:var(--muted);font-size:13px}
-    @media (max-width:980px){.container{grid-template-columns:1fr}}
-  </style>
+
+    .header {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .header h2 {
+        margin: 0;
+        font-size: 24px;
+        color: #1d2d5f;
+    }
+
+    .live-badge {
+        display: inline-block;
+        background: #ff3b3b;
+        color: #fff;
+        padding: 5px 14px;
+        border-radius: 12px;
+        margin-top: 6px;
+        font-size: 14px;
+        font-weight: bold;
+    }
+
+    .flags {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 20px 0;
+        padding: 0 20px;
+    }
+
+    .flags img {
+        width: 75px;
+        border-radius: 6px;
+    }
+
+    video {
+        width: 100%;
+        border-radius: 18px;
+        background: #000;
+        margin-top: 15px;
+    }
+
+    .url-box {
+        margin-top: 20px;
+        display: flex;
+        gap: 10px;
+    }
+
+    input {
+        width: 100%;
+        padding: 10px;
+        border-radius: 12px;
+        border: 1px solid #bbb;
+        font-size: 15px;
+    }
+
+    button {
+        background: #1d2d5f;
+        color: white;
+        padding: 10px 18px;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        font-size: 15px;
+    }
+
+    button:hover {
+        background: #152043;
+    }
+
+</style>
 </head>
 <body>
 
 <div class="container">
-  <!-- LEFT: Form -->
-  <div class="panel">
-    <h1>Create new match</h1>
 
-    <label>First team name</label>
-    <input id="team1Name" type="text" list="teams" placeholder="Team A" value="Oman"/>
-    <datalist id="teams">
-      <option>Oman</option><option>Pakistan A</option><option>India</option><option>Australia</option><option>England</option><option>Bangladesh</option>
-    </datalist>
-
-    <label>Second team name</label>
-    <input id="team2Name" type="text" placeholder="Team B" value="Pakistan A"/>
-
-    <label>First team logo (URL)</label>
-    <input id="team1Logo" type="url" placeholder="https://..." value="/mnt/data/2cc50e2c-3b95-4ce6-b1f9-d5995a36d06b.png" />
-
-    <label>Second team logo (URL)</label>
-    <input id="team2Logo" type="url" placeholder="https://..." value="/mnt/data/2cc50e2c-3b95-4ce6-b1f9-d5995a36d06b.png" />
-
-    <div class="row">
-      <div class="col">
-        <label>Match start (local)</label>
-        <input id="startTime" type="datetime-local" />
-      </div>
-      <div class="col">
-        <label>Match end (local)</label>
-        <input id="endTime" type="datetime-local" />
-      </div>
+    <div class="header">
+        <h2>AUS vs ENG — Live Player</h2>
+        <div class="live-badge">Live</div>
     </div>
 
-    <label>League name</label>
-    <input id="leagueName" type="text" placeholder="Asia Cup 2025" value="Asia Cup 2025"/>
-
-    <label>League logo (optional)</label>
-    <input id="leagueLogo" type="url" placeholder="https://..."/>
-
-    <label>Channel / Platform</label>
-    <input id="channel" type="text" placeholder="PTV Sports" />
-
-    <label>Commentator</label>
-    <input id="commentator" type="text" placeholder="Commentator name(s)" />
-
-    <label>Post link on your site (href)</label>
-    <input id="postLink" type="url" placeholder="https://your-site.com/match/123" value="#" />
-
-    <label>The result</label>
-    <select id="result">
-      <option value="vs">vs</option>
-      <option value="end">END</option>
-      <option value="live">LIVE</option>
-      <option value="upcoming">UPCOMING</option>
-    </select>
-
-    <label>Extra notes (optional)</label>
-    <input id="notes" type="text" placeholder="e.g. Toss: Oman - elected to bat"/>
-
-    <div class="actions">
-      <button id="btnGenerate" class="btn">Create code</button>
-      <button id="btnSave" class="btn" title="Save to Vercel API (if available) or localStorage">Save the match</button>
-      <button id="btnClear" class="btn secondary">Clear form</button>
-      <button id="btnLoadLocal" class="btn ghost">Load saved (local)</button>
-    </div>
-
-    <label style="margin-top:14px">Generated HTML code</label>
-    <textarea id="generatedCode" placeholder="Generated HTML will appear here"></textarea>
-
-    <div style="margin-top:10px" class="small">Tip: Deploy this page to Vercel. If you add serverless API routes at <code>/api/save</code> and <code>/api/list</code> (POST/GET), the app will try to save/load remotely. Otherwise matches are saved locally in your browser storage.</div>
-
-    <div class="saved-list" id="savedList">
-      <!-- populated by JS -->
-    </div>
-  </div>
-
-  <!-- RIGHT: Preview -->
-  <div class="panel preview-wrap">
-    <h1>Live preview</h1>
-
-    <div id="previewArea" class="match-card" aria-live="polite">
-      <div style="display:flex;flex-direction:column;gap:6px">
-        <div style="display:flex;align-items:center;gap:12px">
-          <div class="team">
-            <img id="p1Logo" src="/mnt/data/2cc50e2c-3b95-4ce6-b1f9-d5995a36d06b.png" alt="team 1 logo"/>
-            <div>
-              <div id="p1Name" class="name">Oman</div>
-              <div id="p1Meta" class="meta">N/A</div>
-            </div>
-          </div>
-
-          <div style="flex:1;text-align:center">
-            <div class="vs">V S</div>
-            <div style="margin-top:6px;"><span id="statusBadge" class="match-status">END</span></div>
-          </div>
-
-          <div class="team" style="justify-content:flex-end">
-            <div style="text-align:right">
-              <div id="p2Name" class="name">Pakistan A</div>
-              <div id="p2Meta" class="meta">PTV Sports</div>
-            </div>
-            <img id="p2Logo" src="/mnt/data/2cc50e2c-3b95-4ce6-b1f9-d5995a36d06b.png" alt="team 2 logo"/>
-          </div>
+    <div class="flags">
+        <div style="text-align:center;">
+            <img src="https://flagcdn.com/w320/au.png">
+            <p>AUS</p>
         </div>
-
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div class="small" id="leagueInfo">Asia Cup 2025</div>
-          <div class="small" id="matchTimeInfo">N/A</div>
+        <div style="text-align:center;">
+            <img src="https://flagcdn.com/w320/gb-eng.png">
+            <p>ENG</p>
         </div>
-      </div>
     </div>
 
-    <div style="margin-top:12px">
-      <button id="btnCopy" class="btn">Copy HTML</button>
-      <button id="btnExportJSON" class="btn secondary">Export JSON</button>
+    <video id="video" controls autoplay></video>
+
+    <div class="url-box">
+        <input id="streamURL" placeholder="Paste m3u8 URL here">
+        <button onclick="playStream()">Play</button>
     </div>
 
-    <footer>
-      <div class="small">Preview uses a local sample image by default: <code>/mnt/data/2cc50e2c-3b95-4ce6-b1f9-d5995a36d06b.png</code></div>
-    </footer>
-  </div>
 </div>
 
 <script>
-  (function(){
-    // Elements
-    const team1Name = document.getElementById('team1Name');
-    const team2Name = document.getElementById('team2Name');
-    const team1Logo = document.getElementById('team1Logo');
-    const team2Logo = document.getElementById('team2Logo');
-    const startTime = document.getElementById('startTime');
-    const endTime = document.getElementById('endTime');
-    const leagueName = document.getElementById('leagueName');
-    const leagueLogo = document.getElementById('leagueLogo');
-    const channel = document.getElementById('channel');
-    const commentator = document.getElementById('commentator');
-    const postLink = document.getElementById('postLink');
-    const result = document.getElementById('result');
-    const notes = document.getElementById('notes');
+function playStream() {
+    const video = document.getElementById("video");
+    const url = document.getElementById("streamURL").value;
 
-    const generatedCode = document.getElementById('generatedCode');
-    const previewArea = document.getElementById('previewArea');
-    const p1Logo = document.getElementById('p1Logo');
-    const p2Logo = document.getElementById('p2Logo');
-    const p1Name = document.getElementById('p1Name');
-    const p2Name = document.getElementById('p2Name');
-    const p1Meta = document.getElementById('p1Meta');
-    const p2Meta = document.getElementById('p2Meta');
-    const statusBadge = document.getElementById('statusBadge');
-    const leagueInfo = document.getElementById('leagueInfo');
-    const matchTimeInfo = document.getElementById('matchTimeInfo');
-
-    const btnGenerate = document.getElementById('btnGenerate');
-    const btnSave = document.getElementById('btnSave');
-    const btnClear = document.getElementById('btnClear');
-    const btnLoadLocal = document.getElementById('btnLoadLocal');
-    const btnCopy = document.getElementById('btnCopy');
-    const btnExportJSON = document.getElementById('btnExportJSON');
-    const savedList = document.getElementById('savedList');
-
-    // Default populate times (optional)
-    function setDefaultTimes(){
-      const now = new Date();
-      const later = new Date(now.getTime() + 2*60*60*1000);
-      startTime.value = toDatetimeLocalStr(now);
-      endTime.value = toDatetimeLocalStr(later);
+    if (Hls.isSupported()) {
+        const hls = new Hls();
+        hls.loadSource(url);
+        hls.attachMedia(video);
+    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+        video.src = url;
     }
-
-    function toDatetimeLocalStr(d){
-      // create string like "2025-11-21T07:50"
-      const pad = n => String(n).padStart(2,'0');
-      return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
-    }
-
-    function formatLocal(dtStr){
-      if(!dtStr) return 'N/A';
-      const d = new Date(dtStr);
-      if (isNaN(d)) return 'N/A';
-      return d.toLocaleString();
-    }
-
-    // Update preview
-    function updatePreview(){
-      p1Logo.src = team1Logo.value || p1Logo.src;
-      p2Logo.src = team2Logo.value || p2Logo.src;
-      p1Name.textContent = team1Name.value || 'Team 1';
-      p2Name.textContent = team2Name.value || 'Team 2';
-      leagueInfo.textContent = leagueName.value || '';
-      p1Meta.textContent = notes.value || '';
-      p2Meta.textContent = channel.value || '';
-      statusBadge.textContent = result.value.toUpperCase();
-      matchTimeInfo.textContent = (startTime.value ? formatLocal(startTime.value) : 'N/A') + (endTime.value ? ' — ' + formatLocal(endTime.value) : '');
-    }
-
-    // Compose HTML snippet (safe-ish, minimal)
-    function composeHTML(){
-      const obj = {
-        team1: { name: team1Name.value, logo: team1Logo.value },
-        team2: { name: team2Name.value, logo: team2Logo.value },
-        start: startTime.value,
-        end: endTime.value,
-        league: { name: leagueName.value, logo: leagueLogo.value },
-        channel: channel.value,
-        commentator: commentator.value,
-        link: postLink.value || '#',
-        result: result.value,
-        notes: notes.value
-      };
-
-      // Minimal markup similar to screenshot
-      const html = `
-<a class="match-event" href="${escapeHtml(obj.link)}" title="${escapeHtml(obj.team1.name + ' vs ' + obj.team2.name)}">
-  <div class="match-card">
-    <div class="first-team">
-      <div class="team-logo"><img alt="${escapeHtml(obj.team1.name)}" src="${escapeHtml(obj.team1.logo)}" width="70" height="70"/></div>
-      <div class="team-name">${escapeHtml(obj.team1.name)}</div>
-    </div>
-
-    <div class="match-middle">
-      <div class="vs">V S</div>
-      <div class="status">${escapeHtml(obj.result)}</div>
-      <div class="meta">
-        <div class="league">${escapeHtml(obj.league.name || '')}</div>
-        <div class="time">${escapeHtml(formatLocal(obj.start) + (obj.end ? ' — ' + formatLocal(obj.end) : ''))}</div>
-      </div>
-    </div>
-
-    <div class="second-team">
-      <div class="team-name">${escapeHtml(obj.team2.name)}</div>
-      <div class="team-logo"><img alt="${escapeHtml(obj.team2.name)}" src="${escapeHtml(obj.team2.logo)}" width="70" height="70"/></div>
-    </div>
-  </div>
-</a>
-`.trim();
-
-      return { html, obj };
-    }
-
-    function escapeHtml(s){
-      if(!s) return '';
-      return s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
-    }
-
-    // Copy to clipboard
-    btnCopy.addEventListener('click', ()=> {
-      const val = generatedCode.value;
-      if(!val) return alert('Nothing to copy — generate the code first.');
-      navigator.clipboard.writeText(val).then(()=> alert('HTML copied to clipboard.'));
-    });
-
-    // Export JSON
-    btnExportJSON.addEventListener('click', ()=>{
-      const { obj } = composeHTML();
-      const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = (obj.team1.name || 'match') + '.json';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    });
-
-    // Generate code button
-    btnGenerate.addEventListener('click', ()=> {
-      updatePreview();
-      const { html, obj } = composeHTML();
-      generatedCode.value = html;
-    });
-
-    // Save match (try remote, fallback to local)
-    btnSave.addEventListener('click', async ()=>{
-      updatePreview();
-      const { html, obj } = composeHTML();
-      // Try remote save
-      try {
-        const res = await fetch('/api/save', {
-          method:'POST',
-          headers:{'content-type':'application/json'},
-          body: JSON.stringify({ data: obj })
-        });
-        if(res.ok){
-          const json = await res.json();
-          alert('Saved remotely: ' + (json.id || 'ok'));
-          loadSavedLocal(); // refresh UI
-          return;
-        } else {
-          console.warn('Remote save returned', res.status);
-          throw new Error('Remote save failed');
-        }
-      } catch(e){
-        // fallback: localStorage
-        saveLocal(obj);
-        alert('Saved locally in your browser (localStorage).');
-        loadSavedLocal();
-      }
-    });
-
-    // Local storage helper
-    function saveLocal(obj){
-      const key = 'matches_v1';
-      const raw = localStorage.getItem(key);
-      let arr = raw ? JSON.parse(raw) : [];
-      obj._id = 'local_' + Date.now();
-      arr.unshift(obj);
-      // keep only last 200
-      if(arr.length>200) arr = arr.slice(0,200);
-      localStorage.setItem(key, JSON.stringify(arr));
-    }
-
-    function loadSavedLocal(){
-      const key = 'matches_v1';
-      const raw = localStorage.getItem(key);
-      let arr = raw ? JSON.parse(raw) : [];
-      renderSavedList(arr);
-    }
-
-    function renderSavedList(arr){
-      savedList.innerHTML = '';
-      if(!arr || arr.length===0){
-        savedList.innerHTML = '<div class="small">No saved matches (local).</div>';
-        return;
-      }
-      arr.forEach(item=>{
-        const div = document.createElement('div');
-        div.className = 'saved-item';
-        div.innerHTML = '<div style="display:flex;gap:10px;align-items:center"><img src="'+escapeHtml(item.team1.logo||'')+'" style="width:36px;height:24px;object-fit:contain;border:1px solid #eee;padding:2px;border-radius:4px"/><div><div style="font-weight:700">'+escapeHtml(item.team1.name) + ' vs ' + escapeHtml(item.team2.name) + '</div><div class="small">' + (item.league?.name || '') + '</div></div></div><div style="display:flex;gap:8px;align-items:center"><button class="btn ghost small" data-id="'+escapeHtml(item._id)+'">Load</button><button class="btn secondary small" data-del="'+escapeHtml(item._id)+'">Delete</button></div>';
-        savedList.appendChild(div);
-      });
-
-      // Attach handlers
-      savedList.querySelectorAll('button[data-id]').forEach(b=>{
-        b.addEventListener('click', (ev)=>{
-          const id = ev.currentTarget.getAttribute('data-id');
-          const key = 'matches_v1';
-          const arr = JSON.parse(localStorage.getItem(key) || '[]');
-          const found = arr.find(x=>x._id === id);
-          if(!found) return alert('Saved item not found');
-          // populate form
-          team1Name.value = found.team1.name || '';
-          team2Name.value = found.team2.name || '';
-          team1Logo.value = found.team1.logo || '';
-          team2Logo.value = found.team2.logo || '';
-          startTime.value = found.start || '';
-          endTime.value = found.end || '';
-          leagueName.value = found.league?.name || '';
-          leagueLogo.value = found.league?.logo || '';
-          channel.value = found.channel || '';
-          commentator.value = found.commentator || '';
-          postLink.value = found.link || '#';
-          result.value = found.result || 'vs';
-          notes.value = found.notes || '';
-          updatePreview();
-          alert('Loaded saved match into the form.');
-        });
-      });
-
-      savedList.querySelectorAll('button[data-del]').forEach(b=>{
-        b.addEventListener('click', (ev)=>{
-          const id = ev.currentTarget.getAttribute('data-del');
-          if(!confirm('Delete this saved match?')) return;
-          const key = 'matches_v1';
-          let arr = JSON.parse(localStorage.getItem(key) || '[]');
-          arr = arr.filter(x=>x._id !== id);
-          localStorage.setItem(key, JSON.stringify(arr));
-          loadSavedLocal();
-        });
-      });
-    }
-
-    // Load remote saved matches (if api/list exists)
-    async function tryLoadRemote(){
-      try{
-        const res = await fetch('/api/list');
-        if(!res.ok) throw new Error('No remote list');
-        const json = await res.json();
-        // Expecting array in json.items or json
-        const arr = Array.isArray(json) ? json : (json.items || []);
-        if(arr && arr.length){
-          // Map to local-like objects for rendering
-          const mapped = arr.map(it => {
-            // If remote returns { key, value } flatten
-            if(it.value) return {...it.value, _id: it.key || ('remote_'+Math.random())};
-            return {...it, _id: it.id || it.key || ('remote_'+Math.random())};
-          });
-          renderSavedList(mapped);
-        } else {
-          loadSavedLocal();
-        }
-      }catch(e){
-        // console.log('remote list not available', e);
-        loadSavedLocal();
-      }
-    }
-
-    // Clear
-    btnClear.addEventListener('click', ()=> {
-      if(!confirm('Clear the form?')) return;
-      team1Name.value = '';
-      team2Name.value = '';
-      team1Logo.value = '';
-      team2Logo.value = '';
-      startTime.value = '';
-      endTime.value = '';
-      leagueName.value = '';
-      leagueLogo.value = '';
-      channel.value = '';
-      commentator.value = '';
-      postLink.value = '#';
-      result.value = 'vs';
-      notes.value = '';
-      updatePreview();
-    });
-
-    btnLoadLocal.addEventListener('click', ()=> loadSavedLocal());
-
-    // Update preview when inputs change (debounced)
-    const inputs = [team1Name, team2Name, team1Logo, team2Logo, startTime, endTime, leagueName, leagueLogo, channel, result, notes];
-    inputs.forEach(i => i.addEventListener('input', debounce(updatePreview, 120)));
-
-    // very small debounce
-    function debounce(fn, t){let tm;return function(...a){clearTimeout(tm);tm=setTimeout(()=>fn.apply(this,a),t)}}
-
-    // initial
-    setDefaultTimes();
-    updatePreview();
-    tryLoadRemote();
-
-    // small helper to show escaped html in textarea nicely
-    generatedCode.addEventListener('focus', ()=> {
-      // no-op
-    });
-
-    // keyboard shortcut: Ctrl+Enter => generate
-    document.addEventListener('keydown', (e)=> {
-      if((e.ctrlKey||e.metaKey) && e.key === 'Enter'){
-        e.preventDefault();
-        btnGenerate.click();
-      }
-    });
-
-  })();
+}
 </script>
 
 </body>
